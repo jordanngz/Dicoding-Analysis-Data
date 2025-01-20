@@ -4,12 +4,19 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-# Load datasets
-orders_df = pd.read_csv(r'C:/Users/jordan/Downloads/E-Commerce Public Dataset/orders_dataset.csv')
-order_payments_df = pd.read_csv(r'C:/Users/jordan/Downloads/E-Commerce Public Dataset/order_payments_dataset.csv')
-order_items_df = pd.read_csv(r'C:/Users/jordan/Downloads/E-Commerce Public Dataset/order_items_dataset.csv')
-products_df = pd.read_csv(r'C:/Users/jordan/Downloads/E-Commerce Public Dataset/products_dataset.csv')
-order_reviews_df = pd.read_csv(r'C:/Users/jordan/Downloads/E-Commerce Public Dataset/order_reviews_dataset.csv')
+# URLs of the raw CSV files on GitHub
+orders_url = 'https://raw.githubusercontent.com/jordanngz/Dicoding-Analysis-Data/main/orders_dataset.csv'
+order_payments_url = 'https://raw.githubusercontent.com/jordanngz/Dicoding-Analysis-Data/main/order_payments_dataset.csv'
+order_items_url = 'https://raw.githubusercontent.com/jordanngz/Dicoding-Analysis-Data/main/order_items_dataset.csv'
+products_url = 'https://raw.githubusercontent.com/jordanngz/Dicoding-Analysis-Data/main/products_dataset.csv'
+order_reviews_url = 'https://raw.githubusercontent.com/jordanngz/Dicoding-Analysis-Data/main/order_reviews_dataset.csv'
+
+# Load data directly from the raw GitHub URLs
+orders_df = pd.read_csv(orders_url)
+order_payments_df = pd.read_csv(order_payments_url)
+order_items_df = pd.read_csv(order_items_url)
+products_df = pd.read_csv(products_url)
+order_reviews_df = pd.read_csv(order_reviews_url)
 
 # Title of the dashboard
 st.title('E-commerce Analysis Dashboard')
