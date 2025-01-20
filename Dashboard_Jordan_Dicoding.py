@@ -18,6 +18,36 @@ order_items_df = pd.read_csv(order_items_url)
 products_df = pd.read_csv(products_url)
 order_reviews_df = pd.read_csv(order_reviews_url)
 
+# Data Cleaning Process (without displaying to the user)
+
+# 1. Cleaning Data in products_df
+products_df['product_category_name'].fillna('Unknown', inplace=True)
+products_df['product_name_lenght'].fillna(0, inplace=True)  # Mengisi panjang nama produk dengan 0
+products_df['product_description_lenght'].fillna(0, inplace=True)  # Mengisi panjang deskripsi produk dengan 0
+products_df['product_photos_qty'].fillna(0, inplace=True)  # Mengisi jumlah foto produk dengan 0
+products_df['product_weight_g'].fillna(0, inplace=True)  # Mengisi berat produk dengan 0
+products_df['product_length_cm'].fillna(0, inplace=True)  # Mengisi panjang produk dengan 0
+products_df['product_height_cm'].fillna(0, inplace=True)  # Mengisi tinggi produk dengan 0
+products_df['product_width_cm'].fillna(0, inplace=True)  # Mengisi lebar produk dengan 0
+
+# 2. Cleaning Data in order_items_df
+order_items_df.dropna(subset=['order_id', 'order_item_id', 'product_id', 'seller_id', 'price'], inplace=True)
+
+# 3. Cleaning Data in orders_df
+orders_df['order_status'].fillna('Unknown', inplace=True)
+orders_df['order_approved_at'].fillna('Unknown', inplace=True)
+orders_df['order_delivered_carrier_date'].fillna('Unknown', inplace=True)
+orders_df['order_delivered_customer_date'].fillna('Unknown', inplace=True)
+
+# 4. Cleaning Data in order_reviews_df
+order_reviews_df['review_comment_title'].fillna('No Title', inplace=True)
+order_reviews_df['review_comment_message'].fillna('No Message', inplace=True)
+
+# Remove duplicates after cleaning
+order_items_df.drop_duplicates(inplace=True)
+products_df.drop_duplicates(inplace=True)
+orders_df.drop_duplicates(inplace=True)
+
 # Title of the dashboard
 st.title('E-commerce Analysis Dashboard')
 
@@ -28,7 +58,7 @@ selection = st.sidebar.radio('Go to', ['Home', 'Category Sales', 'Payment Satisf
 # Home section
 if selection == 'Home':
     st.header('Welcome to the Public E-commerce Dicoding Analysis Dashboard! :sparkles:')
-    st.write('This dashboard provides insights into daily orders, total revenue, product sales by category, customer satisfaction,transaction frequency analysis and product Performance.')
+    st.write('This dashboard provides insights into daily orders, total revenue, product sales by category, customer satisfaction, transaction frequency analysis and product performance.')
 
 # Category Sales Visualization
 if selection == 'Category Sales':
@@ -206,4 +236,3 @@ footer_text = """
     </div>
 """
 st.markdown(footer_text, unsafe_allow_html=True)
-
