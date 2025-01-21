@@ -22,13 +22,13 @@ order_reviews_df = pd.read_csv(order_reviews_url)
 
 # 1. Cleaning Data in products_df
 products_df['product_category_name'].fillna('Unknown', inplace=True)
-products_df['product_name_lenght'].fillna(0, inplace=True)  # Mengisi panjang nama produk dengan 0
-products_df['product_description_lenght'].fillna(0, inplace=True)  # Mengisi panjang deskripsi produk dengan 0
-products_df['product_photos_qty'].fillna(0, inplace=True)  # Mengisi jumlah foto produk dengan 0
-products_df['product_weight_g'].fillna(0, inplace=True)  # Mengisi berat produk dengan 0
-products_df['product_length_cm'].fillna(0, inplace=True)  # Mengisi panjang produk dengan 0
-products_df['product_height_cm'].fillna(0, inplace=True)  # Mengisi tinggi produk dengan 0
-products_df['product_width_cm'].fillna(0, inplace=True)  # Mengisi lebar produk dengan 0
+products_df['product_name_lenght'].fillna(0, inplace=True)
+products_df['product_description_lenght'].fillna(0, inplace=True)
+products_df['product_photos_qty'].fillna(0, inplace=True)
+products_df['product_weight_g'].fillna(0, inplace=True)
+products_df['product_length_cm'].fillna(0, inplace=True)
+products_df['product_height_cm'].fillna(0, inplace=True)
+products_df['product_width_cm'].fillna(0, inplace=True)
 
 # 2. Cleaning Data in order_items_df
 order_items_df.dropna(subset=['order_id', 'order_item_id', 'product_id', 'seller_id', 'price'], inplace=True)
@@ -66,11 +66,18 @@ orders_df['season_name'] = orders_df['order_purchase_timestamp'].dt.month.apply(
 # Sidebar for season selection
 season_filter = st.sidebar.selectbox("Select Season", ['All', 'Winter', 'Spring', 'Summer', 'Fall'])
 
-# Filter the orders based on the selected season
+# Date input for filtering
+start_date = st.sidebar.date_input("Start Date", orders_df['order_purchase_timestamp'].min())
+end_date = st.sidebar.date_input("End Date", orders_df['order_purchase_timestamp'].max())
+
+# Filter the orders based on the selected date range and season
+filtered_orders = orders_df[
+    (orders_df['order_purchase_timestamp'].dt.date >= start_date) & 
+    (orders_df['order_purchase_timestamp'].dt.date <= end_date)
+]
+
 if season_filter != 'All':
-    filtered_orders = orders_df[orders_df['season_name'] == season_filter]
-else:
-    filtered_orders = orders_df
+    filtered_orders = filtered_orders[filtered_orders['season_name'] == season_filter]
 
 # Title of the dashboard
 st.title('E-commerce Analysis Dashboard')
@@ -99,7 +106,7 @@ if selection == 'Category Sales':
     sales_by_category_sorted = sales_by_category.sort_values(by='price', ascending=False)
 
     # Create a horizontal bar plot
-    fig, ax = plt.subplots(figsize=(12,15))
+    fig, ax = plt.subplots(figsize=(12, 15))
     ax.barh(sales_by_category_sorted['product_category_name'], sales_by_category_sorted['price'], color='green')
     ax.set_xlabel('Total Sales')
     ax.set_ylabel('Product Category')
@@ -122,7 +129,7 @@ elif selection == 'Payment Satisfaction':
     payment_review_scores = payment_reviews_filtered.groupby('payment_type')['review_score'].mean().reset_index()
 
     # Create a horizontal bar plot
-    fig, ax = plt.subplots(figsize=(8,6))
+    fig, ax = plt.subplots(figsize=(8, 6))
     ax.barh(payment_review_scores['payment_type'], payment_review_scores['review_score'], color='purple')
     ax.set_xlabel('Average Review Score')
     ax.set_ylabel('Payment Method')
@@ -159,7 +166,7 @@ elif selection == 'Customer Frequency Analysis':
 
     # Visualize customer distribution per bin
     bin_counts = filtered_orders['frequency_bin'].value_counts().sort_index()
-    fig, ax = plt.subplots(figsize=(10,6))
+    fig, ax = plt.subplots(figsize=(10, 6))
     bin_counts.plot(kind='barh', color='skyblue', ax=ax)
     ax.set_title(f'Distribution of Customers by Frequency Bin for {season_filter} Season', fontsize=16)
     ax.set_xlabel('Number of Customers', fontsize=14)
