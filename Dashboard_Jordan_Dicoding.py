@@ -191,4 +191,8 @@ elif selection == 'Product Performance':
 
     # Visualisasi kategori produk dengan penjualan terendah
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.barh(sales_by_category_sorted['product
+    ax.barh(sales_by_category_sorted['product_category_name'].tail(5), sales_by_category_sorted['price'].tail(5), color='red')
+    ax.set_xlabel('Total Sales', fontsize=14)
+    ax.set_ylabel('Product Category', fontsize=14)
+    ax.set_title('Bottom 5 Product Categories by Total Sales', fontsize=16)
+    st.pyplot(fig)
