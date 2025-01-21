@@ -18,35 +18,31 @@ order_items_df = pd.read_csv(order_items_url)
 products_df = pd.read_csv(products_url)
 order_reviews_df = pd.read_csv(order_reviews_url)
 
-# Data Cleaning Process (without displaying to the user)
+# Convert 'order_purchase_timestamp' to datetime format for filtering by date
+orders_df['order_purchase_timestamp'] = pd.to_datetime(orders_df['order_purchase_timestamp'])
 
-# 1. Cleaning Data in products_df
-products_df['product_category_name'].fillna('Unknown', inplace=True)
-products_df['product_name_lenght'].fillna(0, inplace=True)  # Mengisi panjang nama produk dengan 0
-products_df['product_description_lenght'].fillna(0, inplace=True)  # Mengisi panjang deskripsi produk dengan 0
-products_df['product_photos_qty'].fillna(0, inplace=True)  # Mengisi jumlah foto produk dengan 0
-products_df['product_weight_g'].fillna(0, inplace=True)  # Mengisi berat produk dengan 0
-products_df['product_length_cm'].fillna(0, inplace=True)  # Mengisi panjang produk dengan 0
-products_df['product_height_cm'].fillna(0, inplace=True)  # Mengisi tinggi produk dengan 0
-products_df['product_width_cm'].fillna(0, inplace=True)  # Mengisi lebar produk dengan 0
+# Extract 'season' from the 'order_purchase_timestamp' for seasonal filtering
+orders_df['season'] = orders_df['order_purchase_timestamp'].dt.month % 12 // 3 + 1
+season_dict = {1: 'Spring', 2: 'Summer', 3: 'Fall', 4: 'Winter'}
+orders_df['season_name'] = orders_df['season'].map(season_dict)
 
-# 2. Cleaning Data in order_items_df
-order_items_df.dropna(subset=['order_id', 'order_item_id', 'product_id', 'seller_id', 'price'], inplace=True)
+# Sidebar for filtering options
+st.sidebar.header('Filter Options')
 
-# 3. Cleaning Data in orders_df
-orders_df['order_status'].fillna('Unknown', inplace=True)
-orders_df['order_approved_at'].fillna('Unknown', inplace=True)
-orders_df['order_delivered_carrier_date'].fillna('Unknown', inplace=True)
-orders_df['order_delivered_customer_date'].fillna('Unknown', inplace=True)
+# Date Range Filter
+start_date = st.sidebar.date_input('Start Date', orders_df['order_purchase_timestamp'].min())
+end_date = st.sidebar.date_input('End Date', orders_df['order_purchase_timestamp'].max())
 
-# 4. Cleaning Data in order_reviews_df
-order_reviews_df['review_comment_title'].fillna('No Title', inplace=True)
-order_reviews_df['review_comment_message'].fillna('No Message', inplace=True)
+# Season Filter
+season_filter = st.sidebar.selectbox('Select Season', options=['All', 'Spring', 'Summer', 'Fall', 'Winter'])
 
-# Remove duplicates after cleaning
-order_items_df.drop_duplicates(inplace=True)
-products_df.drop_duplicates(inplace=True)
-orders_df.drop_duplicates(inplace=True)
+# Filter data based on date range
+filtered_orders = orders_df[(orders_df['order_purchase_timestamp'].dt.date >= pd.to_datetime(start_date).date()) &
+                            (orders_df['order_purchase_timestamp'].dt.date <= pd.to_datetime(end_date).date())]
+
+# Further filter data based on the selected season
+if season_filter != 'All':
+    filtered_orders = filtered_orders[filtered_orders['season_name'] == season_filter]
 
 # Title of the dashboard
 st.title('E-commerce Analysis Dashboard')
@@ -58,7 +54,7 @@ selection = st.sidebar.radio('Go to', ['Home', 'Category Sales', 'Payment Satisf
 # Home section
 if selection == 'Home':
     st.header('Welcome to the Public E-commerce Dicoding Analysis Dashboard! :sparkles:')
-    st.write('This dashboard provides insights into daily orders, total revenue, product sales by category, customer satisfaction, transaction frequency analysis and product performance.')
+    st.write('This dashboard provides insights into daily orders, total revenue, product sales by category, customer satisfaction, transaction frequency analysis, and product performance.')
 
 # Category Sales Visualization
 if selection == 'Category Sales':
@@ -143,21 +139,14 @@ elif selection == 'Customer Frequency Analysis':
 elif selection == 'Daily Orders':
     st.header('Daily Orders and Revenue')
     
-    # Convert 'order_purchase_timestamp' to datetime format
-    orders_df['order_purchase_timestamp'] = pd.to_datetime(orders_df['order_purchase_timestamp'])
-    
-    # Add Date filter using date_input
-    start_date = st.date_input('Start Date', orders_df['order_purchase_timestamp'].min())
-    end_date = st.date_input('End Date', orders_df['order_purchase_timestamp'].max())
-
     # Filter the orders within the selected date range
-    filtered_orders = orders_df[(orders_df['order_purchase_timestamp'].dt.date >= start_date) & 
+    filtered_orders = orders_df[(orders_df['order_purchase_timestamp'].dt.date >= start_date) &
                                  (orders_df['order_purchase_timestamp'].dt.date <= end_date)]
     
     # Extract Date and calculate daily orders
     daily_orders = filtered_orders.groupby('order_purchase_timestamp').size().reset_index(name='daily_orders')
 
-    # Calculate total revenue (assuming 'price' column exists in the orders data)
+    # Calculate total revenue
     total_revenue = order_payments_df[(order_payments_df['order_id'].isin(filtered_orders['order_id']))]['payment_value'].sum()
 
     # Create a plot for daily orders
@@ -202,37 +191,4 @@ elif selection == 'Product Performance':
 
     # Visualisasi kategori produk dengan penjualan terendah
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.barh(sales_by_category_sorted['product_category_name'].tail(5), sales_by_category_sorted['price'].tail(5), color='red')
-    ax.set_xlabel('Total Sales', fontsize=14)
-    ax.set_ylabel('Product Category', fontsize=14)
-    ax.set_title('Bottom 5 Product Categories by Total Sales', fontsize=16)
-    st.pyplot(fig)
-
-    # Footer
-footer_text = """
-    <style>
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #f1f1f1;
-            text-align: center;
-            padding: 10px;
-            font-size: 12px;
-            color: #555;
-            border-top: 1px solid #ddd;
-        }
-        .footer a {
-            text-decoration: none;
-            color: #1e90ff;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
-    <div class="footer">
-        Created by Muhammad Jordan, acc min pls : )  
-    </div>
-"""
-st.markdown(footer_text, unsafe_allow_html=True)
+    ax.barh(sales_by_category_sorted['product
