@@ -33,8 +33,34 @@ st.sidebar.header('Filter Options')
 start_date = st.sidebar.date_input('Start Date', orders_df['order_purchase_timestamp'].min())
 end_date = st.sidebar.date_input('End Date', orders_df['order_purchase_timestamp'].max())
 
+
 # Season Filter
-season_filter = st.sidebar.selectbox('Select Season', options=['All', 'Spring', 'Summer', 'Fall', 'Winter'])
+def get_season(month):
+    if month in [12, 1, 2]:
+        return 'Winter'
+    elif month in [3, 4, 5]:
+        return 'Spring'
+    elif month in [6, 7, 8]:
+        return 'Summer'
+    else:
+        return 'Fall'
+
+# Add 'season_name' column based on the 'order_purchase_timestamp'
+orders_df['season_name'] = orders_df['order_purchase_timestamp'].dt.month.apply(get_season)
+
+# Sidebar for selecting the season
+season_filter = st.sidebar.selectbox("Select Season", ['All', 'Winter', 'Spring', 'Summer', 'Fall'])
+
+# Filter the orders based on the selected season
+if season_filter != 'All':
+    filtered_orders = orders_df[orders_df['season_name'] == season_filter]
+else:
+    filtered_orders = orders_df
+
+# Display the filtered orders
+st.write(f"Displaying data for season: {season_filter}")
+st.dataframe(filtered_orders)
+
 
 # Filter data based on date range
 filtered_orders = orders_df[(orders_df['order_purchase_timestamp'].dt.date >= pd.to_datetime(start_date).date()) &
