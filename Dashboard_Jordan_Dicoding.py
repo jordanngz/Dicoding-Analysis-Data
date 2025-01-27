@@ -168,11 +168,18 @@ elif selection == 'Daily Orders':
     # Create the plot
     fig, ax1 = plt.subplots(figsize=(12, 6))
 
+
     # Plot daily orders
     ax1.set_xlabel('Date')
     ax1.set_ylabel('Number of Orders', color='blue')
     ax1.plot(daily_summary['order_purchase_timestamp'], daily_summary['daily_orders'], label='Daily Orders', color='blue')
     ax1.tick_params(axis='y', labelcolor='blue')
+
+    # Plot revenue on a secondary y-axis
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Revenue', color='green')
+    ax2.plot(daily_summary['order_purchase_timestamp'], daily_summary['daily_revenue'], label='Daily Revenue', color='green')
+    ax2.tick_params(axis='y', labelcolor='green')
 
     fig.tight_layout()
     st.pyplot(fig)
