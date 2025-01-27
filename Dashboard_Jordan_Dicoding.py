@@ -134,8 +134,14 @@ elif selection == 'Customer Frequency Analysis':
     frequency = filtered_orders.groupby('customer_id')['order_id'].count().reset_index()
     frequency.columns = ['customer_id', 'frequency']
 
-    bins = [0, 10, 20, 50, 100, 200]
-    labels = ['0-10', '11-20', '21-50', '51-100', '101+']
+    st.sidebar.header('Custom Binning Options')
+    bins_input = st.sidebar.text_input(
+        'Enter custom bins separated by commas (e.g., 0, 10, 20, 50, 100)',
+        '0, 10, 20, 50, 100, 200'
+    )
+    bins = list(map(int, bins_input.split(',')))
+    labels = [f'{bins[i]}-{bins[i+1]-1}' for i in range(len(bins)-1)]
+
     frequency['frequency_bin'] = pd.cut(frequency['frequency'], bins=bins, labels=labels)
 
     bin_counts = frequency['frequency_bin'].value_counts().sort_index()
@@ -152,14 +158,26 @@ elif selection == 'Customer Frequency Analysis':
 elif selection == 'Daily Orders':
     st.header('Daily Orders and Revenue')
 
-    daily_orders = filtered_orders.groupby(filtered_orders['order_purchase_timestamp'].dt.date).size().reset_index(name='daily_orders')
+    daily_orders_revenue = filtered_orders.merge(order_items_df, on='order_id')
+    daily_summary = (
+        daily_orders_revenue.groupby(daily_orders_revenue['order_purchase_timestamp'].dt.date)
+        .agg(daily_orders=('order_id', 'count'), daily_revenue=('price', 'sum'))
+        .reset_index()
+    )
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(daily_orders['order_purchase_timestamp'], daily_orders['daily_orders'], color='skyblue')
-    ax.set_title('Daily Orders Over Time')
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Number of Orders')
+    fig, ax1 = plt.subplots(figsize=(10, 6))
 
+    ax1.set_xlabel('Date')
+    ax1.set_ylabel('Number of Orders', color='blue')
+    ax1.plot(daily_summary['order_purchase_timestamp'], daily_summary['daily_orders'], label='Daily Orders', color='blue')
+    ax1.tick_params(axis='y', labelcolor='blue')
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Revenue', color='green')
+    ax2.plot(daily_summary['order_purchase_timestamp'], daily_summary['daily_revenue'], label='Daily Revenue', color='green')
+    ax2.tick_params(axis='y', labelcolor='green')
+
+    fig.tight_layout()
     st.pyplot(fig)
 
 # Product Performance Visualization
@@ -175,9 +193,19 @@ elif selection == 'Product Performance':
     st.write("**Top 5 Product Categories by Total Sales:**")
     st.dataframe(sales_by_category_sorted.head(5))
 
+    st.write("**Bottom 5 Product Categories by Total Sales:**")
+    st.dataframe(sales_by_category_sorted.tail(5))
+
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.barh(sales_by_category_sorted['product_category_name'].head(5), sales_by_category_sorted['price'].head(5), color='green')
     ax.set_title('Top 5 Product Categories')
+    ax.set_xlabel('Total Sales')
+    ax.set_ylabel('Category')
+    st.pyplot(fig)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.barh(sales_by_category_sorted['product_category_name'].tail(5), sales_by_category_sorted['price'].tail(5), color='red')
+    ax.set_title('Bottom 5 Product Categories')
     ax.set_xlabel('Total Sales')
     ax.set_ylabel('Category')
     st.pyplot(fig)
