@@ -165,26 +165,22 @@ elif selection == 'Daily Orders':
         .reset_index()
     )
 
+    # Create the plot
     fig, ax1 = plt.subplots(figsize=(12, 6))
 
-    # Plotting daily orders
+    # Plot daily orders
     ax1.set_xlabel('Date')
     ax1.set_ylabel('Number of Orders', color='blue')
     ax1.plot(daily_summary['order_purchase_timestamp'], daily_summary['daily_orders'], label='Daily Orders', color='blue')
     ax1.tick_params(axis='y', labelcolor='blue')
 
-    # Plotting revenue on a secondary y-axis
-    ax2 = ax1.twinx()
-    ax2.set_ylabel('Revenue', color='green')
-    ax2.plot(daily_summary['order_purchase_timestamp'], daily_summary['daily_revenue'], label='Daily Revenue', color='green')
-    ax2.tick_params(axis='y', labelcolor='green')
-
-    # Adding revenue labels
-    for x, y in zip(daily_summary['order_purchase_timestamp'], daily_summary['daily_revenue']):
-        ax2.text(x, y, f'${y:,.2f}', color='green', fontsize=9, ha='center', va='bottom')
-
     fig.tight_layout()
     st.pyplot(fig)
+
+    # Display total revenue text
+    total_revenue = daily_summary['daily_revenue'].sum()
+    st.markdown(f"**Total Revenue for Selected Period:** ${total_revenue:,.2f}")
+
 
 
 # Product Performance Visualization
