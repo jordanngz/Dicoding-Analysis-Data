@@ -102,7 +102,7 @@ if selection == 'Category Sales':
     sales_by_category = order_items_products_df.groupby('product_category_name')['price'].sum().reset_index()
     sales_by_category_sorted = sales_by_category.sort_values(by='price', ascending=False)
 
-    fig, ax = plt.subplots(figsize=(15, 8))
+    fig, ax = plt.subplots(figsize=(15, 12))
     ax.barh(sales_by_category_sorted['product_category_name'], sales_by_category_sorted['price'], color='green')
     ax.set_xlabel('Total Sales')
     ax.set_ylabel('Product Category')
